@@ -1,6 +1,7 @@
 using MySql.Data.MySqlClient;
 using dotnet_mysql_minimal_api;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 
 var app = builder.Build();
 
@@ -22,6 +35,11 @@ app.UseHttpsRedirection();
 
 
 ///////////////////// MEXER SÓ AQUI DENTRO (DEFINIR ENDPOINTS)
+
+
+// Adicionar o middleware de CORS
+app.UseCors("AllowAll");
+
 
 var obterConexao = () =>
 {
@@ -52,6 +70,19 @@ app.MapPost("/Registrar", (RegisterInsert payload) => {
 
     // Lógica do endpoint
     var data = conn.Register(payload);
+
+    // Retorno
+    return Results.Ok(data);
+});
+
+
+// Verificar se email existe
+app.MapPost("/VerificarEmailJaExiste", (EmailRequest payload) => {
+    // Criar a conexão
+    var conn = obterConexao();
+
+    // Lógica do endpoint
+    var data = conn.EmailJaExiste(payload);
 
     // Retorno
     return Results.Ok(data);
