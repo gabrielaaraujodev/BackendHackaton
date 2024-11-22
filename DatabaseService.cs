@@ -32,7 +32,7 @@ namespace dotnet_mysql_minimal_api
                 else if (payload.UserType == "voluntario")
                 {
                     insertQuery = $"""
-                        INSERT INTO Voluntario (Nome, CPF, RegistroConselho, AreaAtuacao, E_mail, Senha)
+                        INSERT INTO Voluntario (Nome, CPF, RegistroConselho, Formacao_Academica, E_mail, Senha)
                         VALUES ('{payload.NomeVoluntario}', '{payload.CPF}', '{payload.RegistroConselho}', 
                                 '{payload.AreaAtuacao}', '{payload.Email}', '{payload.Password}')
                     """;
@@ -94,6 +94,53 @@ namespace dotnet_mysql_minimal_api
                     }
                 }
                 return false; 
+            }
+        }
+        public bool EmailJaExiste(EmailRequest email)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                if (email.Usertype == "ong")
+                {
+                    string queryVoluntario = $"""
+                        SELECT * FROM ONG 
+                        WHERE E_mail = '{email.Email}'
+                    """;
+                    using (var command = new MySqlCommand(queryVoluntario, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+                else
+                {
+                    string queryVoluntario = $"""
+                        SELECT * FROM Voluntario 
+                        WHERE E_mail = '{email.Email}'
+                    """;
+                    using (var command = new MySqlCommand(queryVoluntario, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                }
+                    
             }
         }
     }
